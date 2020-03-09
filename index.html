@@ -1,0 +1,48 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+  <meta charset="UTF-8">
+  <meta name="viewport" content="width=device-width, initial-scale=1.0">
+  <title>Document</title>
+  <style>
+    button {
+      border: 1px solid slategray;
+      border-radius: 7px;
+      margin: 10px;
+      background-color: white;
+    }
+    #result {
+      color: royalblue;
+    }
+  </style>
+</head>
+<body>
+  <button onclick="sayHI()">Say HI</button>
+  <button onclick="unknownCmd()">Send unknown command</button>
+  <button onclick="stop()">Stop worker</button>
+  <br> <br>
+  <output id="result"></output>
+
+  <script>
+    function sayHI() {
+      worker.postMessage({'cmd': 'start', 'msg': 'Hi'});
+    }
+  
+    function stop() {
+      // worker.terminate() from this script would also stop the worker.
+      worker.postMessage({'cmd': 'stop', 'msg': 'Bye'});
+    }
+  
+    function unknownCmd() {
+      worker.postMessage({'cmd': 'foobard', 'msg': '???'});
+    }
+  
+    var worker = new Worker('worker.js');
+  
+    worker.addEventListener('message', function(e) {
+      document.getElementById('result').textContent = e.data;
+    }, false);
+  </script>
+  <!-- <script src="script.js"></script> -->
+</body>
+</html>
