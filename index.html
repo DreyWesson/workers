@@ -1,48 +1,66 @@
 <!DOCTYPE html>
 <html lang="en">
-<head>
-  <meta charset="UTF-8">
-  <meta name="viewport" content="width=device-width, initial-scale=1.0">
-  <title>Document</title>
-  <style>
-    button {
-      border: 1px solid slategray;
-      border-radius: 7px;
-      margin: 10px;
-      background-color: white;
-    }
-    #result {
-      color: royalblue;
-    }
-  </style>
-</head>
-<body>
-  <button onclick="sayHI()">Say HI</button>
-  <button onclick="unknownCmd()">Send unknown command</button>
-  <button onclick="stop()">Stop worker</button>
-  <br> <br>
-  <output id="result"></output>
+  <head>
+    <meta charset="UTF-8" />
+    <meta name="viewport" content="width=device-width, initial-scale=1.0" />
+    <title>Document</title>
+    <style>
+      button {
+        border: 1px solid slategray;
+        border-radius: 7px;
+        margin: 10px;
+        background-color: white;
+      }
+      #result {
+        color: royalblue;
+      }
+    </style>
+  </head>
+  <body>
+    <button onclick="sayHI()">Say HI</button>
+    <button onclick="unknownCmd()">Send unknown command</button>
+    <button onclick="stop()">Stop worker</button>
+    <br />
+    <br />
+    <output id="result"></output>
 
-  <script>
-    function sayHI() {
-      worker.postMessage({'cmd': 'start', 'msg': 'Hi'});
-    }
-  
-    function stop() {
-      // worker.terminate() from this script would also stop the worker.
-      worker.postMessage({'cmd': 'stop', 'msg': 'Bye'});
-    }
-  
-    function unknownCmd() {
-      worker.postMessage({'cmd': 'foobard', 'msg': '???'});
-    }
-  
-    var worker = new Worker('worker.js');
-  
-    worker.addEventListener('message', function(e) {
-      document.getElementById('result').textContent = e.data;
-    }, false);
-  </script>
-  <!-- <script src="script.js"></script> -->
-</body>
+    <script id="worker" type="application/javascript">
+      self.onmessage = function (e) {
+        var data = e.data;
+        switch (data.cmd) {
+          case "start":
+            self.postMessage("WORKER STARTED: " + data.msg);
+            break;
+          case "stop":
+            self.postMessage(
+              "WORKER STOPPED: " + data.msg + ". (buttons will no longer work)"
+            );
+            self.close(); // Terminates the worker.
+            break;
+          default:
+            self.postMessage("Unknown command: " + data.msg);
+        }
+      };
+    </script>
+
+    <script>
+      const sayHI = () => worker.postMessage({ cmd: "start", msg: "Hi" });
+      const stop = () => worker.postMessage({ cmd: "stop", msg: "Bye" });
+      const unknownCmd = () =>
+        worker.postMessage({ cmd: "foobard", msg: "???" });
+      // this helps to create an url for the script above
+      const blob = new Blob([document.getElementById("worker").textContent]);
+      const worker = new Worker(window.webkitURL.createObjectURL(blob));
+
+      worker.onmessage = (e) =>
+        (document.getElementById("result").textContent = e.data);
+
+      // worker.addEventListener(
+      //   "message",
+      //   (e) => (document.getElementById("result").textContent = e.data),
+      //   false
+      // );
+    </script>
+    <!-- <script src="/worker.js"></script> -->
+  </body>
 </html>
